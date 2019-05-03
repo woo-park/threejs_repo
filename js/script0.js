@@ -64,6 +64,77 @@
             scene.add(ground);
         }//end of groundwallfunction
         createGroundWall(scene);
+
+
+        radialWave = function (u, v, optionalTarget) {
+            //takes three para
+            var result = optionalTarget || new THREE.Vector3();
+            var r = 400;   //size of the plane
+    
+            var x = Math.sin(u) * r;      //bc x and z 
+            var z = Math.sin(v / 2) * 2 * r;  //for seme reason - /2 mmakes it square
+            var y = (Math.sin(u * 4 * Math.PI) + Math.cos(v * 2 * Math.PI)) * 6;    //this 2.8 makes it far more drastic
+        
+            return result.set( x, y, z );
+        };
+        let wave_geometry = function () {
+            let geom  = new THREE.ParametricGeometry(radialWave, 50, 50);
+            geom.center();      //centers 0,0,0
+            geom.castShadow = true;
+            console.log(geom);
+            return geom;
+        }
+        // wave_geometry();
+
+        function createWave(){
+            let textureLoader = new THREE.TextureLoader();
+
+            let wave_material = Physijs.createMaterial(
+                new THREE.MeshStandardMaterial(
+                    {
+                        //one way of texture - metalic and changing shape/form
+                    map: textureLoader.load('../assets/textures/w_d.png'),
+                    displacementMap: textureLoader.load('../assets/textures/w_d.png'),
+                    metalness: 0.02,
+                    roughness:0.07,
+                    color: 0xffffff, 
+                    transparent:true, // 
+                    opacity:0.8
+                    }
+                )
+            );
+            wave_material.side = THREE.DoubleSide;
+            // for(let i = 1; i < 10; i++) {
+            // let wave = new Physijs.PlaneMesh(wave_geometry(), wave_material, 1);
+            //     wave.position.y = i * 10;
+            //     scene.add(wave);
+            // }        
+            let pile = new THREE.Geometry();
+    //hmmmmmmm
+            for(let i = 1; i <100; i++) {
+                let waveMesh = wave_geometry();
+                // waveMesh.updateMatrix();
+                pile.merge(waveMesh);
+                pile.position.y = i;
+                console.log(pile);
+            }
+
+            scene.add(new Physijs.PlaneMesh(pile, wave_material, 1));
+            
+
+
+            
+        }   //end of createwave function
+        createWave();
+        
+        
+       
+
+
+
+
+
+
         let stoneGem = new THREE.BoxGeometry(0.6, 6, 2);
         let stone = new Physijs.BoxMesh(stoneGem, Physijs.createMaterial(
             new THREE.MeshStandardMaterial({
@@ -96,25 +167,26 @@
                 let bubble_material = new THREE.MeshStandardMaterial({
 
                     //one way of texture - metalic and changing shape/form
-                    // map: textureLoader.load('../assets/textures/w_c.jpg'),
-                    // displacementMap: textureLoader.load('../assets/textures/w_d.png'),
-                    // metalness: 0.02,
-                    // roughness:0.07,
-                    // color: 0xffffff, 
-                    // transparent:true, // 
-                    // opacity:0.8
-
-                    //second way of texturing
-                    alphaMap: textureLoader.load('../assets/textures/alpha/partial-transparency.png'),
-                    // envMap: alternativeMap, //dont need this apparently
+                    map: textureLoader.load('../assets/textures/w_c.jpg'),
+                    displacementMap: textureLoader.load('../assets/textures/w_d.png'),
                     metalness: 0.02,
                     roughness:0.07,
-                    color: 0x000000,
-                    alphaTest: 0.5
+                    color: 0xffffff, 
+                    transparent:true, // 
+                    opacity:0.8
+
+                    // //second way of texturing
+                    // alphaMap: textureLoader.load('../assets/textures/alpha/partial-transparency.png'),
+                    // metalness: 0.02,
+                    // roughness:0.07,
+                    // color: 0x000000,
+                    // alphaTest: 0.5
+                    // // envMap: alternativeMap, //dont need this apparently
                 })
-                bubble_material.alphaMap.wrapS = THREE.RepeatWrapping;
-                bubble_material.alphaMap.wrapT = THREE.RepeatWrapping;
-                bubble_material.alphaMap.repeat.set(8,8);
+                // //goes with second texturing method
+                // bubble_material.alphaMap.wrapS = THREE.RepeatWrapping;
+                // bubble_material.alphaMap.wrapT = THREE.RepeatWrapping;
+                // bubble_material.alphaMap.repeat.set(8,8);
 
                 let bubble = new Physijs.SphereMesh(bubble_sphere, Physijs.createMaterial(
                   bubble_material
