@@ -11,7 +11,26 @@
         scene = new Physijs.Scene({reportSize: 10, fixedTimeStep: 1 /60});
         scene.setGravity(new THREE.Vector3(0,-10,0));
 
+        //variables
+        let clock = new THREE.Clock();
        
+        //if you want to set the background for scene -
+
+        let urls = [
+            '../assets/textures/cubemap/beach/right.png',
+            '../assets/textures/cubemap/beach/left.png',
+            '../assets/textures/cubemap/beach/top.png',
+            '../assets/textures/cubemap/beach/bottom.png',
+            '../assets/textures/cubemap/beach/front.png',
+            '../assets/textures/cubemap/beach/back.png'
+        ];
+
+        let cubeLoader = new THREE.CubeTextureLoader();
+        let textureLoader = new THREE.TextureLoader();
+        let cubeMap = cubeLoader.load(urls);
+        scene.background = cubeMap;
+
+
 
         //creating ground and wall
         function createGroundWall(scene){
@@ -22,7 +41,7 @@
             );
             let ground_material_sides = Physijs.createMaterial(   
                 new THREE.MeshStandardMaterial(
-                    {map: textureLoader.load('../assets/textures/general/wood-2.jpg'), transparent:true, opacity:0.8}), 0.9, 0.3
+                    {map: textureLoader.load('../assets/textures/general/wood-2.jpg'), transparent:true, opacity:0.3}), 0.9, 0.3
             );
             
        
@@ -65,20 +84,23 @@
         }//end of groundwallfunction
         createGroundWall(scene);
 
-
+        
+        let step = 0;
         radialWave = function (u, v, optionalTarget) {
+
             //takes three para
             var result = optionalTarget || new THREE.Vector3();
-            var r = 400;   //size of the plane
+            var r = 417;   //size of the plane
     
-            var x = Math.sin(u) * r;      //bc x and z 
+            var x = Math.sin(u) * 477;      //bc x and z 
             var z = Math.sin(v / 2) * 2 * r;  //for seme reason - /2 mmakes it square
-            var y = (Math.sin(u * 4 * Math.PI) + Math.cos(v * 2 * Math.PI)) * 6;    //this 2.8 makes it far more drastic
+            // step += 0.005;
+            var y = (Math.sin(u * 4 * Math.PI) + Math.cos(v * 2 * Math.PI)) * (20 + step);    //this 2.8 makes it far more drastic
         
             return result.set( x, y, z );
         };
         let wave_geometry = function () {
-            let geom  = new THREE.ParametricGeometry(radialWave, 50, 50);
+            let geom  = new THREE.ParametricGeometry(radialWave, 100, 100);
             geom.center();      //centers 0,0,0
             geom.castShadow = true;
             console.log(geom);
@@ -86,7 +108,7 @@
         }
         // wave_geometry();
 
-        function createWave(){
+        function createWave(scene){
             let textureLoader = new THREE.TextureLoader();
 
             let wave_material = Physijs.createMaterial(
@@ -99,40 +121,38 @@
                     roughness:0.07,
                     color: 0xffffff, 
                     transparent:true, // 
-                    opacity:0.8
+                    opacity:0.2
                     }
                 )
             );
             wave_material.side = THREE.DoubleSide;
-            // for(let i = 1; i < 10; i++) {
-            // let wave = new Physijs.PlaneMesh(wave_geometry(), wave_material, 1);
-            //     wave.position.y = i * 10;
-            //     scene.add(wave);
-            // }        
-            let pile = new THREE.Geometry();
-    //hmmmmmmm
-            for(let i = 1; i <100; i++) {
-                let waveMesh = wave_geometry();
-                // waveMesh.updateMatrix();
-                pile.merge(waveMesh);
-                pile.position.y = i;
-                console.log(pile);
-            }
-
-            scene.add(new Physijs.PlaneMesh(pile, wave_material, 1));
             
+            // //it works if you want many waves compiled
+            // let pile = new THREE.Geometry();
+            // for(let i = 1; i <100; i++) {
+            //     let waveMesh = new THREE.Mesh(wave_geometry(), wave_material);
+            //     waveMesh.position.y = i;
+            //     waveMesh.updateMatrix();
+            //     pile.merge(waveMesh.geometry, waveMesh.matrix);
+               
+            // }
+            // scene.add(new Physijs.PlaneMesh(pile, wave_material, 1));
 
+
+            //one wave 
+            let wave = new Physijs.PlaneMesh(wave_geometry(), wave_material, 1);
+            wave.position.y = 200;
+            wave.castShadow = true;
+            wave.receiveShadow = true;
+
+            scene.add(wave);
+            
+            
 
             
         }   //end of createwave function
-        createWave();
+        createWave(scene);
         
-        
-       
-
-
-
-
 
 
         let stoneGem = new THREE.BoxGeometry(0.6, 6, 2);
@@ -196,11 +216,13 @@
                 bubble.name = "bubble-" + scene.children.length;
 
                 bubble.position.x = - 200 + Math.round(Math.random() * 400);
-                bubble.position.y = 100;
+                bubble.position.y = 600;
                 bubble.position.z = - 200 + Math.round(Math.random() * 400);
-
+                
+                
                 scene.add(bubble);
                 this.numberOfObjects = scene.children.length;
+                
             }
 
             this.outputObjects = function() {
@@ -208,7 +230,55 @@
             }
         }
 
-        airBubble.addSphere();  
+        airBubble.addSphere();  //this is bubbles falling from sky
+
+
+        //sand || could be bubbles too      // static bubbles
+        let addSand = function () {
+            let textureLoader = new THREE.TextureLoader()
+            let sand_size = Math.ceil(Math.random() * 1);
+            let sand_sphere = new THREE.SphereGeometry(sand_size, 32, 32);
+            this.sand_material = new THREE.MeshStandardMaterial();
+            let sand_particle = new THREE.Mesh(sand_sphere,
+                this.sand_material
+            );
+
+            sand_particle.castShadow = true;
+            // sand_particle.name = "sand-" + scene.children.length;
+
+            sand_particle.position.x = - 200 + Math.round(Math.random() * 400);
+            sand_particle.position.y = Math.round(Math.random() * 400);
+            sand_particle.position.z = - 200 + Math.round(Math.random() * 400);
+            
+            // scene.add(sand_particle);
+            
+            return(sand_particle);
+        }
+        //pg 269
+        let createSand = function () {
+            let textureLoader = new THREE.TextureLoader()
+        let sandBox = new THREE.Geometry();
+        for(let i = 0; i < 300; i++){
+            let sandMesh = addSand();
+            sandMesh.updateMatrix();
+            sandBox.merge(sandMesh.geometry, sandMesh.matrix);
+        }
+        let sandMaterial = Physijs.createMaterial(new THREE.MeshStandardMaterial({
+            //one way of texture - metalic and changing shape/form
+            map: textureLoader.load('../assets/textures/w_d.png'),
+            // displacementMap: textureLoader.load('../assets/textures/w_d.png'),
+            metalness:1,
+            roughness:1,
+            color: 0xffffff, 
+            transparent:true, // 
+            opacity:0.8
+        }));
+        scene.add(new Physijs.BoxMesh(sandBox, sandMaterial, 0));
+        }
+        createSand();
+
+
+
 
         // create a camera
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -238,7 +308,7 @@
  
          document.getElementById("webgl-output").appendChild(renderer.domElement);
          let trackballControls = initTrackballControls(camera, renderer);
-         let clock = new THREE.Clock();
+         
  
          function initTrackballControls(camera, renderer) {
              var trackballControls = new THREE.TrackballControls(camera, renderer.domElement);
@@ -257,6 +327,7 @@
         // controls.redraw();
         render();
         function render() {
+            
             window.addEventListener('click',airBubble.addSphere);
 
             // recursive requestAnimationFrame
@@ -265,7 +336,7 @@
             renderer.render(scene, camera);
             scene.simulate();
             helper.update();
-            
+    
         }
 
         function onResize() {
