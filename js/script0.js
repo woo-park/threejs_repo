@@ -37,12 +37,15 @@
             let textureLoader = new THREE.TextureLoader();
             let ground_material_ground = Physijs.createMaterial(   
                 new THREE.MeshStandardMaterial(
-                    {map: textureLoader.load('../assets/textures/general/wood-2.jpg'), transparent:false, opacity:1}), 0.9, 0.3
+                    // {map: textureLoader.load('../assets/textures/general/wood-2.jpg'), 
+                    {map: textureLoader.load('./svgandjpg/jpg/texture1_sm.jpg'), transparent:false, opacity:1}), 0.9, 0.3
             );
             let ground_material_sides = Physijs.createMaterial(   
                 new THREE.MeshStandardMaterial(
-                    {map: textureLoader.load('../assets/textures/general/wood-2.jpg'), transparent:true, opacity:0.3}), 0.9, 0.3
+                    {map: textureLoader.load('./svgandjpg/jpg/texture7_sm.jpg'), transparent:true, opacity:0.5}), 0.9, 0.3
             );
+            
+            
             
        
             let ground = new Physijs.BoxMesh(new THREE.BoxGeometry(400, 1, 400), ground_material_ground, 0);
@@ -56,6 +59,7 @@
             border_left.castShadow = true;
             border_left.receiveShadow = true;
             ground.add(border_left);
+
 
             let border_right = new Physijs.BoxMesh(new THREE.BoxGeometry(2, 400, 400), ground_material_sides, 0);
             border_right.position.x = 201;
@@ -115,8 +119,10 @@
                 new THREE.MeshStandardMaterial(
                     {
                         //one way of texture - metalic and changing shape/form
-                    map: textureLoader.load('../assets/textures/w_d.png'),
-                    displacementMap: textureLoader.load('../assets/textures/w_d.png'),
+                        map: textureLoader.load('./svgandjpg/jpg/texture3_sm.jpg'),
+                        map: textureLoader.load('../assets/textures/w_d.png'),
+                    
+                    // displacementMap: textureLoader.load('./svgandjpg/jpg/texture3_sm.jpg'),
                     metalness: 0.02,
                     roughness:0.07,
                     color: 0xffffff, 
@@ -187,8 +193,8 @@
                 let bubble_material = new THREE.MeshStandardMaterial({
 
                     //one way of texture - metalic and changing shape/form
-                    map: textureLoader.load('../assets/textures/w_c.jpg'),
-                    displacementMap: textureLoader.load('../assets/textures/w_d.png'),
+                    map: textureLoader.load('./svgandjpg/jpg/texture3_sm.jpg'),
+                    // displacementMap: textureLoader.load('./svgandjpg/jpg/texture8_sm.jpg'),
                     metalness: 0.02,
                     roughness:0.07,
                     color: 0xffffff, 
@@ -260,12 +266,13 @@
         let sandBox = new THREE.Geometry();
         for(let i = 0; i < 300; i++){
             let sandMesh = addSand();
+            sandMesh.matrixAutoUpdate = false;
             sandMesh.updateMatrix();
             sandBox.merge(sandMesh.geometry, sandMesh.matrix);
         }
         let sandMaterial = Physijs.createMaterial(new THREE.MeshStandardMaterial({
             //one way of texture - metalic and changing shape/form
-            map: textureLoader.load('../assets/textures/w_d.png'),
+            map: textureLoader.load('./svgandjpg/jpg/texture3_sm.jpg'),
             // displacementMap: textureLoader.load('../assets/textures/w_d.png'),
             metalness:1,
             roughness:1,
