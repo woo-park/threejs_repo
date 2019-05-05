@@ -1,6 +1,8 @@
 // import { isContext } from "vm";
 
     let camera, scene, renderer, controls, mesh_group;
+    
+    
 
 
     function init() {
@@ -278,6 +280,181 @@
         
 
 
+        // var geometry = new THREE.BufferGeometry();
+        // // create a simple square shape. We duplicate the top left and bottom right
+        // // vertices because each vertex needs to appear once per triangle.
+        // var vertices = new Float32Array( [
+        //     -1.0, -1.0,  1.0,
+        //      1.0, -1.0,  1.0,
+        //      1.0,  1.0,  1.0,
+        
+        //      1.0,  1.0,  1.0,
+        //     -1.0,  1.0,  1.0,
+        //     -1.0, -1.0,  1.0
+        // ] );
+        
+        // // itemSize = 3 because there are 3 values (components) per vertex
+        // geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+        // var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+        // var mesh = new THREE.Mesh( geometry, material );
+
+
+    let pointclouds;
+    let mouse = new THREE.Vector2();
+    let intersection = null;
+    let spheres = [];
+    let spheresIndex = 0;
+    //clock
+
+    let threshold = 0.1;
+    let pointSize = 0.05;
+    
+    let rotateY = new THREE.Matrix4().makeRotationY( 0.005 );
+
+    function generatePointCloudGeometry(color){
+
+        let width = 400;
+        let length = 400;
+
+        let geometry =new THREE.BufferGeometry();
+        let number_ofpoints = width * length;
+        
+        let positions = new Float32Array(number_ofpoints * 3);
+        let colors = new Float32Array(number_ofpoints * 3);
+
+        let k = 0;
+
+        for (let i = 0; i < width; i++){
+            for (let j = 0; j < length; j++) {
+                let u = i / width; // so from 1/80 to 80/80
+                let v = j / length; // so from 1/160 to 160/160
+                let x = u - 0.5; //why?
+                let y = (Math.cos( u * Math.PI * 4) + Math.sin( v * Math.PI * 8)) / 20; //okay the cos and sin - ups and downs
+                let z = v - 0.5; // so always around 1.0
+
+                //push to array
+                positions[3 * k] = x;        // 0 //3 //6 
+                positions[3 * k + 1] = y;    // 1 //4 //7 
+                positions[3 * k + 2] = z;    // 2 //5 //8   
+
+                let intensity = ( y + 0.1 ) * 5;
+                colors[3 * k] = color.r * intensity;    //0 , 3, 6, 9, ...
+                colors[3 * k] = color.g * intensity;    //1, 4, 7, ...
+                colors[3 * k] = color.b * intensity;    //2, 5, 8 ...
+
+                k++;
+            }
+        }
+
+        geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
+        geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3));
+        geometry.computeBoundingBox();
+
+        return geometry;
+    }
+    function generatePointcloud(color) {
+        let geometry = generatePointCloudGeometry(color);
+        
+        let material = new THREE.PointsMaterial({size:pointSize, vertexColors: THREE.VertexColors});
+
+        return new THREE.Points(geometry, material);
+    }
+
+    function generatePointcloudIndex(color) {
+        let width = 400;        //same as the above function
+        let length = 400;
+        let geometry = generatePointcloud(color);
+        let number_ofpoints = width * length;
+        let number_ofindexes = new Uint16Array( number_ofpoints);
+
+        let k = 0;
+        //iterate through and lets give indexes
+        for (let i = 0; i < width; i++) {
+            for (let j = 0; j < length; j++) {
+                number_ofindexes[k] = k; // number_ofindexes[0] = 0; [1] = 1; [2] = 2;...
+                k++;        
+            }
+        }
+
+        geometry.setIndex( new THREE.BufferAttribute(number_ofindexes, 1) );
+        let material = new THREE.PointsMaterial({size: pointSize, vertexColors: THREE.VertexColors});
+        return new THREE.Points(geometry, material);
+
+    }
+    
+
+    // let pcBuffer33 = generatePointcloudIndex(new THREE.Color( 0, 1, 0 ));
+    // pcBuffer33.position.y = 300;
+    // pcBuffer33.scale.set(400,400,400);
+    // scene.add(pcBuffer33);
+
+
+
+    let pcBuffer = generatePointcloud(new THREE.Color( 1, 0, 0 ));
+    pcBuffer.position.y = 300;
+    pcBuffer.scale.set(400,400,400);
+    scene.add(pcBuffer);
+    // let pcBuffer2 = generatePointcloud(new THREE.Color( 30, 50, 29 ));
+    // let pcBuffer3 = generatePointcloud(new THREE.Color( 10, 10, 1 ));
+    // pcBuffer2.position.y = 200;
+    // pcBuffer3.position.y = 100;
+    // pcBuffer2.scale.set(400,400,400);
+    // pcBuffer3.scale.set(400,400,400);
+    // scene.add(pcBuffer2);
+    // scene.add(pcBuffer3);
+
+
+    let objects = [];
+    let object_clicked = false;
+    let raycaster = new THREE.Raycaster();
+    raycaster.params.Points.threshold = threshold;
+
+    function findMousePosition(event) {
+        event.preventDefault();
+
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;        //we'll see why we *2 +1 later
+        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        //-0.5578703703703703 -0.22014388489208625 .i.e   
+    }
+    
+    function changeTarget(event){
+        event.preventDefault();
+        object_clicked = true;
+
+        let intersections = raycaster.intersectObjects(scene.children);
+        intersection = (intersections.length) > 0 ? intersections[0] : null;
+        if(intersections.length > 0) {
+            toggle = true;
+            intersection = intersections[0];
+            
+            console.log(intersection.object);
+            console.log(intersection.object.position);
+            
+            if(object_clicked){
+                intersection.object.material.color.set(0xff0000);
+                intersection.object.position.y += 10;
+                intersection.object.material.wireframe = true;
+            }
+                
+           
+
+           
+            
+           
+
+            // this.tl.to(this.mesh.rotation, 0.5, {x: 20, ease: Expo.easeOut});
+            intersection.object.__dirtyPosition = true;
+            intersection.object.__dirtyRotation = true;
+            
+            console.log(intersection.object.uuid);
+        } else{
+            // null
+        }
+    }
+    
+
+    document.addEventListener('mousemove',findMousePosition, false);
+    document.addEventListener('click',changeTarget,false);
 
         // lets add spheres - these will be airs
         let airBubble = new function() {
@@ -347,6 +524,7 @@
         camera.position.set(-90, 50, -500);   //back on z axis - up to y
         camera.lookAt(new THREE.Vector3(0, 0, 0));  // scene default is 0,0,0
         // camera.lookAt(scene.position);
+        camera.updateMatrix();      //honestly idk why tho
         scene.add(camera);
        
 
@@ -385,7 +563,11 @@
  
              return trackballControls;
          }
- 
+         
+
+         
+
+
         // controls.redraw();
         render();
         function render() {
@@ -399,6 +581,9 @@
             cube.visible = true;
 
             demo.material.map.needsUpdate = true;
+
+            raycaster.setFromCamera( mouse, camera );       //raycaster
+
 
             // cube2.visible = false;
             // cubeCamera2.updateCubeMap(renderer, scene);
