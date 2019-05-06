@@ -178,7 +178,8 @@
             
 
             let svg_logo4 = new Physijs.BoxMesh(shape4, Physijs.createMaterial(svg_material1),1);
-            
+            svg_logo4.name = 'master_key';
+            svg_logo4.userData = { URL: "http://localhost:8080/threejs_repo/sketch1.html"}
             svg_logo4.scale.set(0.1,0.1,0.1);
 
             svg_logo4.receiveShadow = true;
@@ -500,13 +501,48 @@
         }
 
         function changeTarget(event){
-            event.preventDefault();
+            // event.preventDefault();
             // object_clicked = true;
+            scene.traverse(function(obj){
+                // if(obj instanceof THREE.Mesh && obj.name != 'ground' && obj.name != 'border_left' && obj.name != 'border_right' && obj.name != 'border_back' && obj.name != 'border_front' && obj.name != 'wave'){
+                //     let objarray =[];
+                //     objarray.push(obj);
+                    let intersections = raycaster.intersectObjects(obj);
+                         
+                    let intersection = (intersections.length) > 0 ? intersections[0] : null;
+        
+                    if(intersections.length > 0) {
+                            // for(each of scene.children){
+                                //  if (each.type !== 'CubeCamera' && each.type !== 'SpotLight') {
+                                //      console.log('works true');
+                                //  }
+                    
+                                // if(each.name == 'ground'){console.log(each.name)}
+                                    // let step;
+                                    // step += 0.4;
+                                    if(intersection.object.name == 'master_key'){
+                                        window.open(intersection.object.userData.URL);
+                                    }
+                                    
+                            //  }   
+                              
+                            
+                            // intersection.object.position.y += 10;
+                            // intersection.object.material.wireframe = true;
+          
+                        // this.tl.to(this.mesh.rotation, 0.5, {x: 20, ease: Expo.easeOut});
+                    }
+        
+                // }
+            });
+
+
 
            
         }
         // document.addEventListener('mousemove',onDocMouseMove );
         document.addEventListener('mousemove',findMousePosition, false);
+        // document.addEventListener('click',changeTarget(event), false);
         
 
         // lets add spheres - these will be airs
@@ -724,6 +760,10 @@
                                     // if(each.name == 'ground'){console.log(each.name)}
                                         // let step;
                                         // step += 0.4;
+                                        if(intersection.object.name == 'master_key'){
+                                            window.open(intersection.object.userData.URL);
+                                        }
+
                                         intersection.object.rotation.x += 0.01;
                                         intersection.object.rotation.y += 0.01;  
                                         // intersection.object.rotation.z += Math.abs(Math.sin(counter/2));    //maybe take it out
@@ -734,7 +774,8 @@
                                         intersection.object.__dirtyPosition = true;
                                         intersection.object.__dirtyRotation = true;
                                         
-                                //  }
+                                //  }   
+                                  
                                 
                                 // intersection.object.position.y += 10;
                                 // intersection.object.material.wireframe = true;
