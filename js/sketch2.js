@@ -9,16 +9,19 @@
         scene = new Physijs.Scene({reportSize: 10, fixedTimeStep: 1 /60});
         scene.setGravity(new THREE.Vector3(0,-10,0));
 
+        var stats = initStats();
+
+        let ground_area = new THREE.Mesh();
         //creating ground and wall
         function createGroundWall(scene){
             let textureLoader = new THREE.TextureLoader();
             let ground_material_ground = Physijs.createMaterial(   
                 new THREE.MeshStandardMaterial(
-                    {map: textureLoader.load('svgandjpg/jpg/texture1_sm.jpg'), transparent:false, opacity:1}), 0.9, 0.3
+                    {map: textureLoader.load('svgandjpg/jpg/texture1_sm.jpg'), color:0xc2b280, transparent:false, opacity:1}), 0.9, 0.3
             );
             let ground_material_sides = Physijs.createMaterial(   
                 new THREE.MeshStandardMaterial(
-                    {map: textureLoader.load('svgandjpg/jpg/texture7_sm.jpg'),
+                    {map: textureLoader.load('svgandjpg/jpg/back2_sm.jpg'),
                     transparent:true,
                     opacity:0.4
                     }), 0.9, 0.3
@@ -33,17 +36,20 @@
             ground.castShadow = true;
             ground.receiveShadow = true;
             ground.position.y = 0;
-                    
+            ground_area.add(ground);
                     //lets add side walls
             let border_left = new Physijs.BoxMesh(new THREE.BoxGeometry(2, skybox_height, skybox_size), ground_material_sides, 0);
+            border_left.name = 'border_left';
             border_left.position.x = -(skybox_size/2) -1;
             border_left.position.y = skybox_height/2;
             border_left.castShadow = true;
             border_left.receiveShadow = true;
             // border_left.material.side =  THREE.DoubleSide;
             ground.add(border_left);
+            
 
             let border_right = new Physijs.BoxMesh(new THREE.BoxGeometry(2, skybox_height, skybox_size), ground_material_sides, 0);
+            border_right.name = 'border_right';   
             border_right.position.x = (skybox_size/2) + 1;
             border_right.position.y = (skybox_height/2);
             border_right.castShadow = true;
@@ -52,6 +58,7 @@
             ground.add(border_right);
 
             let border_back = new Physijs.BoxMesh(new THREE.BoxGeometry(skybox_size, skybox_height, 2), ground_material_sides, 0);
+            border_back.name = 'border_back';
             border_back.position.z = (skybox_size/2) +1;
             border_back.position.y = (skybox_height/2);;
             border_back.castShadow = true;
@@ -60,13 +67,14 @@
             ground.add(border_back);
 
             let border_front = new Physijs.BoxMesh(new THREE.BoxGeometry(skybox_size, skybox_height, 2), ground_material_sides, 0);
+            border_front.name = 'border_front';
             border_front.position.z = -(skybox_size/2);;
             border_front.position.y = (skybox_height/2);;
             border_front.castShadow = true;
             border_front.receiveShadow = true;
             // border_front.material.side =  THREE.DoubleSide;
             ground.add(border_front);
-
+            
             scene.add(ground);
         }//end of groundwallfunction
 
@@ -282,7 +290,7 @@
         // let spheresIndex = 0;
  
         let threshold = 0.1;
-        let pointSize = 0.05;
+        let pointSize = 0.02;
         
         let rotateY = new THREE.Matrix4().makeRotationY( 0.005 );   //hm
 
@@ -295,7 +303,7 @@
             let number_ofpoints = width * length;
             
             let positions = new Float32Array(number_ofpoints * 3);
-            let colors = new Float32Array(number_ofpoints * 3);
+            // let colors = new Float32Array(number_ofpoints * 3);
 
             let k = 0;
 
@@ -312,10 +320,13 @@
                     positions[3 * k + 1] = y;    // 1 //4 //7 
                     positions[3 * k + 2] = z;    // 2 //5 //8   
 
-                    let intensity = ( y + 0.1 ) * 5;
-                    colors[3 * k] = color.r * intensity;    //0 , 3, 6, 9, ...
-                    colors[3 * k] = color.g * intensity;    //1, 4, 7, ...
-                    colors[3 * k] = color.b * intensity;    //2, 5, 8 ...
+                    // let intensity = ( y + 0.1 ) * 5;
+                    // colors[3 * k] = color.r * intensity;    //0 , 3, 6, 9, ...
+                    // colors[3 * k] = color.g * intensity;    //1, 4, 7, ...
+                    // colors[3 * k] = color.b * intensity;    //2, 5, 8 ...
+                    // colors[3 * k] = color; //0 , 3, 6, 9, ...
+                    // colors[3 * k] = color; //1, 4, 7, ...
+                    // colors[3 * k] = color;   //2, 5, 8 ...
 
                     k++;
                 }
@@ -323,43 +334,46 @@
             // page 253
 
             geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
-            geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3));
+            // geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3));
             geometry.computeBoundingBox();
 
             return geometry;
         }
-        function generatePointcloud(color) {
-            let geometry = generatePointCloudGeometry(color);
+        function generatePointcloud(color_temp) {
+            let geometry = generatePointCloudGeometry();
             
             let material = new THREE.PointsMaterial({
                 size:pointSize,
-                vertexColors: THREE.VertexColors
+                // color: 0x42dff4,
+                color: color_temp,
+                transparent: true,
+                opacity: 0.1
             });
 
             return new THREE.Points(geometry, material);
         }
 
-        function generatePointcloudIndex(color) {
-            let width = 400;        //same as the above function
-            let length = 400;
-            let geometry = generatePointcloud(color);
-            let number_ofpoints = width * length;
-            let number_ofindexes = new Uint16Array( number_ofpoints);
+        // function generatePointcloudIndex(color) {
+        //     let width = 400;        //same as the above function
+        //     let length = 400;
+        //     let geometry = generatePointcloud(color);
+        //     let number_ofpoints = width * length;
+        //     let number_ofindexes = new Uint16Array( number_ofpoints);
 
-            let k = 0;
-            //iterate through and lets give indexes
-            for (let i = 0; i < width; i++) {
-                for (let j = 0; j < length; j++) {
-                    number_ofindexes[k] = k; // number_ofindexes[0] = 0; [1] = 1; [2] = 2;...
-                    k++;        
-                }
-            }
+        //     let k = 0;
+        //     //iterate through and lets give indexes
+        //     for (let i = 0; i < width; i++) {
+        //         for (let j = 0; j < length; j++) {
+        //             number_ofindexes[k] = k; // number_ofindexes[0] = 0; [1] = 1; [2] = 2;...
+        //             k++;        
+        //         }
+        //     }
 
-            geometry.setIndex( new THREE.BufferAttribute(number_ofindexes, 1) );
-            let material = new THREE.PointsMaterial({size: pointSize, vertexColors: THREE.VertexColors});
-            return new THREE.Points(geometry, material);
+        //     geometry.setIndex( new THREE.BufferAttribute(number_ofindexes, 1) );
+        //     let material = new THREE.PointsMaterial({size: pointSize, vertexColors: THREE.VertexColors});
+        //     return new THREE.Points(geometry, material);
 
-        }
+        // }
         
 
         // let pcBuffer33 = generatePointcloudIndex(new THREE.Color( 0, 1, 0 ));
@@ -368,11 +382,15 @@
         // scene.add(pcBuffer33);
 
 
-
-        let pcBuffer = generatePointcloud(new THREE.Color( 1, 0, 0 ));
+        
+        let pcBuffer = generatePointcloud(0x00809f);
+        let pcBuffer2 = generatePointcloud(0x00858d);
         pcBuffer.position.y = 300;
+        pcBuffer2.position.y = 700;
         pcBuffer.scale.set(2000,2000,2000);
+        pcBuffer2.scale.set(2000,2000,2000);
         scene.add(pcBuffer);
+        scene.add(pcBuffer2);
         // let pcBuffer2 = generatePointcloud(new THREE.Color( 30, 50, 29 ));
         // let pcBuffer3 = generatePointcloud(new THREE.Color( 10, 10, 1 ));
         // pcBuffer2.position.y = 200;
@@ -446,6 +464,7 @@
 
             //one wave 
             let wave = new Physijs.PlaneMesh(wave_geometry(), wave_material, 1);
+            wave.name = 'wave';
             wave.position.y = 900;
             wave.castShadow = true;
             wave.receiveShadow = true;
@@ -465,7 +484,7 @@
 
 
 
-
+        let counter = 0;
         let object_clicked = false;
         let raycaster = new THREE.Raycaster();
         // raycaster.params.Points.threshold = threshold;
@@ -477,45 +496,18 @@
             mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;        //we'll see why we *2 +1 later
             mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
             //-0.5578703703703703 -0.22014388489208625 .i.e   
-              console.log(scene.children);
+            //   console.log(scene.children);
         }
 
         function changeTarget(event){
             event.preventDefault();
             // object_clicked = true;
 
-            let selected_objects = [];
-            // if(selected_objects.name == 'ground'){
-            //     // console.log('yes exists');console.log(obj.uuid);
-            // }
-            
-            let intersections = raycaster.intersectObjects(scene.children);
-                         
-            let intersection = (intersections.length) > 0 ? intersections[0] : null;
-
-            if(intersections.length > 0) {
-                    // for(each of scene.children){
-                        //  if (each.type !== 'CubeCamera' && each.type !== 'SpotLight') {
-                        //      console.log('works true');
-                        //  }
-                        
-                        // if(each.name == 'ground'){console.log(each.name)}
-                            
-                        //     intersection.object.scale.set += Math.cos(Math.PI) + Math.sin(Math.PI);
-                            intersection.object.__dirtyPosition = true;
-                            intersection.object.__dirtyRotation = true;
-                            // makemore();
-                    // }
-                    
-                    // intersection.object.position.y += 10;
-                    // intersection.object.material.wireframe = true;
-  
-                // this.tl.to(this.mesh.rotation, 0.5, {x: 20, ease: Expo.easeOut});
-            }
+           
         }
         // document.addEventListener('mousemove',onDocMouseMove );
         document.addEventListener('mousemove',findMousePosition, false);
-        document.addEventListener('click',changeTarget,false);
+        
 
         // lets add spheres - these will be airs
         let airBubble = new function() {
@@ -598,7 +590,25 @@
         // camera.lookAt(scene.position);
         camera.updateMatrix();      //honestly idk why tho
         scene.add(camera);
-       
+
+        function createAudio(){
+            let audioListener = new THREE.AudioListener();
+            camera.add(audioListener);    
+            var positionSound1 = new THREE.PositionalAudio( audioListener );
+            var audioLoader = new THREE.AudioLoader();
+            audioLoader.load('./cow.ogg', function(buffer) {
+                positionSound1.setBuffer( buffer );
+                positionSound1.setRefDistance( 100 );
+                positionSound1.play();
+                positionSound1.setRolloffFactor(5);
+                positionSound1.setLoop(true);
+            });
+    
+            ground_area.add(positionSound1);
+        }
+        createAudio();
+        
+
 
         var spotLight = new THREE.SpotLight(0xFFFFFF);
         spotLight.position.set(0, 1000, 0);
@@ -651,8 +661,9 @@
         // controls.redraw();
         render();
         
+
         
-         
+      
         function render() {
             
             window.addEventListener('click',airBubble.addSphere);
@@ -660,7 +671,7 @@
             // recursive requestAnimationFrame
             trackballControls.update(clock.getDelta()); //works now with inittrackballcontrols
 
-            
+            stats.update();
             // cube.visible = false;
             // cubeCamera.updateCubeMap(renderer, scene);  //honestly it works without this //check 
             // cube.visible = true;
@@ -691,6 +702,55 @@
 
                 break;
             }
+            counter += 0.07;
+            // let counter2;
+            // counter2 += 0.03;
+
+            // document.addEventListener('mouseover', ()=>{ 
+                scene.traverse(function(obj){
+                    if(obj instanceof THREE.Mesh && obj.name != 'ground' && obj.name != 'border_left' && obj.name != 'border_right' && obj.name != 'border_back' && obj.name != 'border_front' && obj.name != 'wave'){
+                        let objarray =[];
+                        objarray.push(obj);
+                        let intersections = raycaster.intersectObjects(objarray);
+                             
+                        let intersection = (intersections.length) > 0 ? intersections[0] : null;
+            
+                        if(intersections.length > 0) {
+                                // for(each of scene.children){
+                                    //  if (each.type !== 'CubeCamera' && each.type !== 'SpotLight') {
+                                    //      console.log('works true');
+                                    //  }
+                        
+                                    // if(each.name == 'ground'){console.log(each.name)}
+                                        // let step;
+                                        // step += 0.4;
+                                        intersection.object.rotation.x += 0.01;
+                                        intersection.object.rotation.y += 0.01;  
+                                        // intersection.object.rotation.z += Math.abs(Math.sin(counter/2));    //maybe take it out
+
+                                        intersection.object.position.x = intersection.object.position.x + 5 * Math.cos(counter);
+                                        // intersection.object.position.y = 10 * Math.abs(Math.sin(counter));
+                                        intersection.object.position.z = intersection.object.position.z + 5 * Math.cos(counter);
+                                        intersection.object.__dirtyPosition = true;
+                                        intersection.object.__dirtyRotation = true;
+                                        
+                                //  }
+                                
+                                // intersection.object.position.y += 10;
+                                // intersection.object.material.wireframe = true;
+              
+                            // this.tl.to(this.mesh.rotation, 0.5, {x: 20, ease: Expo.easeOut});
+                        }
+            
+                    }
+                });
+    
+            // },false);
+           
+            
+           
+
+            
 
 
             requestAnimationFrame(render);

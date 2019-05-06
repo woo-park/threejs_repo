@@ -9,6 +9,8 @@
         scene = new Physijs.Scene({reportSize: 10, fixedTimeStep: 1 /60});
         scene.setGravity(new THREE.Vector3(0,-10,0));
 
+        var stats = initStats();
+
         //creating ground and wall
         function createGroundWall(scene){
             let textureLoader = new THREE.TextureLoader();
@@ -36,6 +38,7 @@
                     
                     //lets add side walls
             let border_left = new Physijs.BoxMesh(new THREE.BoxGeometry(2, skybox_height, skybox_size), ground_material_sides, 0);
+            border_left.name = 'border_left';
             border_left.position.x = -(skybox_size/2) -1;
             border_left.position.y = skybox_height/2;
             border_left.castShadow = true;
@@ -44,6 +47,7 @@
             ground.add(border_left);
 
             let border_right = new Physijs.BoxMesh(new THREE.BoxGeometry(2, skybox_height, skybox_size), ground_material_sides, 0);
+            border_right.name = 'border_right';   
             border_right.position.x = (skybox_size/2) + 1;
             border_right.position.y = (skybox_height/2);
             border_right.castShadow = true;
@@ -52,14 +56,18 @@
             ground.add(border_right);
 
             let border_back = new Physijs.BoxMesh(new THREE.BoxGeometry(skybox_size, skybox_height, 2), ground_material_sides, 0);
+            border_back.name = 'border_back';
             border_back.position.z = (skybox_size/2) +1;
             border_back.position.y = (skybox_height/2);;
             border_back.castShadow = true;
             border_back.receiveShadow = true;
+            // border_back.__dirtyPosition = true; // can't test if this is doing anything  yet
+            // border_back.__dirtyRotation = true;
             // border_back.material.side =  THREE.DoubleSide;
             ground.add(border_back);
 
             let border_front = new Physijs.BoxMesh(new THREE.BoxGeometry(skybox_size, skybox_height, 2), ground_material_sides, 0);
+            border_front.name = 'border_front';
             border_front.position.z = -(skybox_size/2);;
             border_front.position.y = (skybox_height/2);;
             border_front.castShadow = true;
@@ -70,8 +78,7 @@
             scene.add(ground);
         }//end of groundwallfunction
 
-
-
+        
 
         // let stoneGem = new THREE.BoxGeometry(0.6, 6, 2);
         // let stone = new Physijs.BoxMesh(stoneGem, Physijs.createMaterial(
@@ -122,6 +129,8 @@
                 cube.position.y = 500+ Math.round(Math.random() * 800);
                 cube.position.z = - 200 + Math.round(Math.random() * 400);
                 cube.rotation.y = Math.cos(Math.random()* Math.PI * 2); 
+                cube.__dirtyPosition = true;
+                cube.__dirtyRotation = true;
                 cube.castShadow = true;       //check for error - add light to see
                 cube.receiveShadow = true;    //
                 scene.add(cube);
@@ -244,9 +253,9 @@
         // map: textureLoader.load('../assets/textures/general/wood-2.jpg')
         })
         let cube2;
-        let canvasMirrors = 100;
-        function makemore(){
-            for(let i = 0; i < canvasMirrors; i ++) {
+        // let canvasMirrors = 100;
+        function makemore(boxNumber){
+            for(let i = 0; i < boxNumber; i ++) {
                 cube2 =  new Physijs.BoxMesh(cube_demo, Physijs.createMaterial(
                     cube_demo_mat
                 ));
@@ -260,7 +269,7 @@
                 scene.add(cube2);
             }
         }
-        makemore();
+        makemore(70);
 
         
 
@@ -403,34 +412,37 @@
             event.preventDefault();
             // object_clicked = true;
 
-            let selected_objects = [];
-            // if(selected_objects.name == 'ground'){
-            //     // console.log('yes exists');console.log(obj.uuid);
-            // }
-            
-            let intersections = raycaster.intersectObjects(scene.children);
+            scene.traverse(function(obj){
+                if(obj instanceof THREE.Mesh && obj.name != 'ground' && obj.name != 'border_left' && obj.name != 'border_right' && obj.name != 'border_back' && obj.name != 'border_front'){
+                    let objarray =[];
+                    objarray.push(obj);
+                    let intersections = raycaster.intersectObjects(objarray);
                          
-            let intersection = (intersections.length) > 0 ? intersections[0] : null;
-
-            if(intersections.length > 0) {
-                    // for(each of scene.children){
-                        //  if (each.type !== 'CubeCamera' && each.type !== 'SpotLight') {
-                        //      console.log('works true');
-                        //  }
-                        
-                        // if(each.name == 'ground'){console.log(each.name)}
-                            
-                        //     intersection.object.scale.set += Math.cos(Math.PI) + Math.sin(Math.PI);
-                            intersection.object.__dirtyPosition = true;
-                            intersection.object.__dirtyRotation = true;
-                            makemore();
-                    // }
+                    let intersection = (intersections.length) > 0 ? intersections[0] : null;
+        
+                    if(intersections.length > 0) {
+                            // for(each of scene.children){
+                                //  if (each.type !== 'CubeCamera' && each.type !== 'SpotLight') {
+                                //      console.log('works true');
+                                //  }
                     
-                    // intersection.object.position.y += 10;
-                    // intersection.object.material.wireframe = true;
-  
-                // this.tl.to(this.mesh.rotation, 0.5, {x: 20, ease: Expo.easeOut});
-            }
+                                // if(each.name == 'ground'){console.log(each.name)}
+                                    // let step;
+                                    // step += 0.4;
+                                    // intersection.object.rotation.y += Math.cos(Math.PI * step);
+                                    intersection.object.__dirtyPosition = true;
+                                    intersection.object.__dirtyRotation = true;
+                                    makemore(Math.floor(Math.random()*20));
+                            //  }
+                            
+                            // intersection.object.position.y += 10;
+                            // intersection.object.material.wireframe = true;
+          
+                        // this.tl.to(this.mesh.rotation, 0.5, {x: 20, ease: Expo.easeOut});
+                    }
+        
+                }
+            });
         }
         // document.addEventListener('mousemove',onDocMouseMove );
         document.addEventListener('mousemove',findMousePosition, false);
@@ -562,6 +574,46 @@
          
         //  console.log(scene.children[0].type == cubeCamera);
       
+        function openContainer(){
+            scene.traverse(function(obj){
+                obj.__dirtyRotation = true;
+                if(obj.name == 'border_left' ){
+                    obj.translateY(-1000);
+                    obj.translateX(-1000);
+                    obj.rotation.z = -Math.PI / 2;
+                    // obj.rotation.z -= 0.2;
+
+                }
+                if(obj.name == 'border_right' ){
+                    obj.translateY(-1000);
+                    obj.translateX(1000);
+                    obj.rotation.z = -Math.PI / 2;
+                }
+                if(obj.name == 'border_back' ){
+                    obj.translateY(-1000);
+                    obj.translateZ(-1000);
+                    obj.rotation.x = -Math.PI / 2;
+                }
+                if(obj.name == 'border_front' ){
+                    obj.translateY(-1000);
+                    obj.translateZ(1000);
+                    obj.rotation.x = -Math.PI / 2;
+                }
+                obj.__dirtyRotation = true;
+                obj.__dirtyPosition = true;
+
+            });
+
+
+        }
+      
+
+
+        setTimeout(() => {
+            openContainer();
+        }, 20000);
+       
+
 
         // controls.redraw();
         render();
@@ -569,7 +621,7 @@
         
          
         function render() {
-            
+            stats.update();
             // window.addEventListener('click',airBubble.addSphere);
 
             // recursive requestAnimationFrame
