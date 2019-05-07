@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Timer</title>
+    <style media="screen">
+      /* centering */
+      *{
+        margin:0;
+        padding:0;
+      }
+      body{
+        height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+      #wrapper{
+        width:200px;
+        height:200px;
+        perspective:600px;
+
+
+        /* interesting - look more into it */
+        /* this is similar to z-index */
+        /* border:1px solid slategray; */
+      }
+
+      /* from here */
+      #shape1{
+        /* width:100%;
+        height:100%; */
+        /* position:relative; */
+        /* top:-38px; */
+        /* left:0px; */
+        /* top:-20px; */
+        /* border-radius:100px; */
+        /* border:1px dashed black; */
+        height:100vh;
+        transform-style: preserve-3d;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        margin:0;
+        /* so you def need this to have rotate function work in children layer */
+      }
+   
+
+      /* #shape1{
+        transition:all 10s;
+      }
+      #shape1:hover{
+        transform:rotateX(-360deg);
+      } */
+      a{text-decoration: none;
+        color:white;}
+      .panel{
+        position:absolute;
+        box-sizing:content-box;
+        width:100px;
+        height:100px;
+        /* height:100vh; */
+        /* transform-style: preserve-3d; */
+        display:flex;
+        align-items:center;
+        margin:0;
+        justify-content:center;
+      }
+      #panel1{
+        position:absolute;
+        background:blue;
+        opacity:0.2;
+        transform:translateX(25px) rotateY(-120deg) ;
+      }
+      #panel2{
+        position:absolute;
+        background:green;
+        opacity:0.2;
+        transform:translateX(-25px) rotateY(-240deg);
+      }
+      #panel3{
+        position:absolute;
+        background:red;
+        opacity:0.2;
+        transform:translateZ(-43px) rotateY(360deg);
+      }
+      #panel4{
+        position:absolute;
+        background:red;
+        opacity:0.2;
+        transform:translateZ(-43px) rotateY(360deg);
+      }
+      
+
+
+      @keyframes flip {
+        0% {transform: rotateY(0deg) rotateX(0deg)}
+        25% {transform: rotateY(-360deg) rotateX(180deg)}
+        50% {transform: rotateZ(180deg) rotateY(0deg)}
+        100%{transform: rotateX(30deg) rotateY(360deg) }
+      }
+      #shape1{
+        animation-name:flip;
+        animation-direction:alternate;
+        animation-duration:18s;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+        animation-delay: 2s;
+      }
+
+    </style>
+  </head>
+  <body>
+  
+
+      <div id="shape1">
+         <a class ="panel" id="panel1" href="./sketch1.html">1</a>
+         <a class ="panel" id="panel2" href="./sketch2.html">2</a>
+         <a class ="panel" id="panel3" href="./sketch3.html">3</a>
+         <a class ="panel" id="panel4" href="./sketch3.html">4</a>
+
+            <!-- <div class ="panel" id="panel1"></div>
+            <div class ="panel" id="panel2"></div>
+            <div class ="panel" id="panel3"></div> -->
+          
+
+      </div>
+    
+  </body>
+</html>

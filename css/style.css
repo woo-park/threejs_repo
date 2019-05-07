@@ -1,0 +1,94 @@
+body{
+    margin:0;
+    overflow:hidden;
+}
+
+#shape1{
+    /* height:100vh; */
+
+    position: absolute;;
+    transform-style: preserve-3d;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0;
+    bottom:150px;
+    left:150px;
+    /* transform: scale(0.1,0.1); */
+    /* so you def need this to have rotate function work in children layer */
+}
+a{text-decoration: none;
+    position: absolute;
+    color:white;}
+.panel{
+    position:absolute;
+    box-sizing:content-box;
+    width:100px;
+    height:100px;
+    /* height:100vh; */
+    /* transform-style: preserve-3d; */
+    display:flex;
+    align-items:center;
+    margin:0;
+    justify-content:center;
+}
+#panel1{
+position:absolute;
+background:#0d355a;
+opacity:0.8;
+transform:translateX(25px) rotateY(-120deg) ;
+}
+#panel2{
+position:absolute;
+background:#59a27a;
+opacity:0.8;
+transform:translateX(-25px) rotateY(-240deg);
+}
+#panel3{
+position:absolute;
+background:#2a1d32;
+opacity:0.8;
+transform:translateZ(-43px) rotateY(360deg);
+}
+#panel4{
+    margin:0;
+    box-sizing:content-box;
+    position:absolute;
+    height:0px;
+    width:0px;
+    border-left:49px solid transparent;
+    border-right:49px solid transparent;
+    border-top:85px solid #907a70;
+    /* background:purple; */
+    opacity:0.2;
+    transform:rotateX(90deg) translateZ(49px) ;
+  }
+  #panel5{
+  color:black;
+  box-sizing:content-box;
+  position:absolute;
+  height:0px;
+  width:0px;
+  border-left:49px solid transparent;
+  border-right:49px solid transparent;
+  border-top:85px solid #907a70;
+  /* background:purple; */
+  opacity:0.2;
+  transform:rotateX(90deg) translateZ(-49px) ;
+}
+  
+
+@keyframes flip {
+0% {transform: rotateY(0deg) rotateX(0deg)}
+25% {transform: rotateY(-360deg) rotateX(180deg)}
+50% {transform: rotateZ(180deg) rotateY(0deg)}
+100%{transform: rotateX(30deg) rotateY(360deg) }
+}
+#shape1{
+animation-name:flip;
+animation-direction:alternate;
+animation-duration:18s;
+/* animation-timing-function: ease-in-out; */
+animation-iteration-count: infinite;
+/* animation-delay: 2s; */
+}

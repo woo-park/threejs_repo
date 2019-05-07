@@ -166,7 +166,7 @@
             
             // let textureLoader = new THREE.TextureLoader();
             let svg_master_material = new THREE.MeshStandardMaterial( { 
-                color: 0x5e7d5e,
+                color: 0xFFD700,
                 opacity: 1,
                 metalness:1,
                 roughness:1
@@ -774,6 +774,7 @@
 
                 setTimeout(() => {
                     camera.position.y += step5;
+                    camera.position.z += step5;
                 },10000);
                 // camera.position.y -=  Math.cos(angle);   //this is good too
                 // camera.position.z = 500 *  Math.sin(angle);

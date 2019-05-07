@@ -32,6 +32,103 @@
 
 
 
+
+        let singleGeometry = new THREE.Geometry();
+        // let singlePanel = new THREE.Mesh();
+        let ratio = 10;
+        let panel_geometry = new THREE.PlaneGeometry(60*ratio,60*ratio);
+        let sphere_geometry = new THREE.SphereGeometry(32, 32, 32);
+
+        let panel_material1 = new THREE.MeshStandardMaterial({
+            transparent: true,
+            opacity: 0.4,
+            color: 0xb01055
+        });
+        let panel_material2 = new THREE.MeshStandardMaterial({
+            transparent: true,
+            opacity: 0.4,
+            color: 0xfa7a55
+        });
+        let panel_material3 = new THREE.MeshStandardMaterial({
+            transparent: true,
+            opacity: 0.4,
+            color: 0x208075
+        });
+
+        let panel_outside_material = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 1,
+        });
+        let panel1 = new THREE.Mesh(panel_geometry, panel_material1);
+        let panel2 = new THREE.Mesh(panel_geometry, panel_material2);
+        let panel3 = new THREE.Mesh(panel_geometry, panel_material3);
+        let sphereMesh = new THREE.Mesh(sphere_geometry);
+        // panel1.position.x = -60;
+        
+
+        // panel1.matrixAutoUpdate = false;
+        // panel2.matrixAutoUpdate = false;
+        // panel3.matrixAutoUpdate = false;
+            
+            
+        panel1.rotation.y = 2*Math.PI/3;
+        panel2.rotation.y = 2*Math.PI * 2/3;
+        panel3.rotation.y = 2*Math.PI;
+
+        panel1.position.x = 15*ratio;
+        panel2.position.x = -15*ratio;
+        panel3.position.z = 26*ratio;
+
+
+
+
+        panel1.name = 'panel1';
+        panel2.name = 'panel2';
+        panel3.name = 'panel3';
+
+        panel1.material.side = THREE.DoubleSide;
+        panel2.material.side = THREE.DoubleSide;
+        panel3.material.side = THREE.DoubleSide;
+
+        panel1.userData = { URL: "http://localhost:8080/threejs_repo/sketch1.html"}
+        panel2.userData = { URL: "http://localhost:8080/threejs_repo/sketch2.html"}
+        panel3.userData = { URL: "http://localhost:8080/threejs_repo/portal.html"}
+
+        // console.log(panel1.userData);
+
+        // panel1.updateMatrix();
+        // panel2.updateMatrix();
+        // panel3.updateMatrix();
+
+        scene.add(panel1);
+        scene.add(panel2);
+        scene.add(panel3);
+
+        // singlePanel.add(panel1);
+        // singlePanel.add(panel2);
+        // singlePanel.add(panel3);
+        // scene.add(singlePanel);
+
+        
+        panel1.updateMatrix();
+        singleGeometry.merge(panel1.geometry, panel1.matrix);
+
+        panel2.updateMatrix();
+        singleGeometry.merge(panel2.geometry, panel2.matrix);
+
+        panel3.updateMatrix();
+        singleGeometry.merge(panel3.geometry, panel3.matrix);
+
+        // sphereMesh.updateMatrix();
+        // singleGeometry.merge(sphereMesh.geometry, sphereMesh.matrix);
+
+        let panels = new THREE.Mesh(singleGeometry, panel_outside_material);
+        panels.scale.set(0.9,0.9,0.9);
+        panels.material.side = THREE.DoubleSide;
+        scene.add(panels);
+
+
         //creating ground and wall
         function createGroundWall(scene){
             let textureLoader = new THREE.TextureLoader();
