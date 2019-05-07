@@ -1,6 +1,7 @@
 // import { isContext } from "vm";
 
     let camera, scene, renderer, controls, mesh_group;
+    let step6 = 0;
     
     function init() {
         Physijs.scripts.worker = '../../libs/other/physijs/physijs_worker.js';
@@ -195,6 +196,47 @@
 
         // let sphereMaterial = cubeMaterial.clone();      //this is so useful
 
+        function extrudeMasterKey(){
+            let svg_master_string = document.getElementById("svg_master_string").getAttribute("d");
+            function extrudeShape(svg_master_string) {
+                let svg_master_geometry = transformSVGPathExposed(svg_master_string);
+                return svg_master_geometry;
+            }
+           
+            let options = {
+                depth: 10,
+                bevelThickness:20,
+                bevelSize:1,
+                bevelSegments:3,
+                bevelEnabled: true,
+                curveSegements:12,
+                steps:1
+            }
+    
+            svg_master_geometry = new THREE.ExtrudeGeometry(extrudeShape(svg_master_string), options);
+            svg_master_geometry.center();
+            
+            // let textureLoader = new THREE.TextureLoader();
+            let svg_master_material = new THREE.MeshStandardMaterial( { 
+                color: 0x5e7d5e,
+                opacity: 1,
+                metalness:1,
+                roughness:1
+                // map: textureLoader.load('../assets/textures/w_c.jpg')
+            } );
+            
+            let svg_master_key = new Physijs.BoxMesh(svg_master_geometry, Physijs.createMaterial(svg_master_material),1);
+            svg_master_key.name = 'master_key';
+            svg_master_key.userData = { URL: "http://localhost:8080/threejs_repo/sketch1.html"}
+            svg_master_key.scale.set(0.1,0.1,0.1);
+            svg_master_key.receiveShadow = true;
+            svg_master_key.castShadow = true;
+            svg_master_key.position.y = 90;
+            svg_master_key.position.x = 200;
+
+            scene.add(svg_master_key);
+        }
+        extrudeMasterKey();
 
         // extruding svgs
         function extrudeSvg(){
@@ -275,7 +317,7 @@
                 for (let x = 0; x < 601; x+= 200){
                     for (let z = 0; z< 601; z+= 200) {
                         // let svg_logo1 = new Physijs.BoxMesh(shape1, Physijs.createMaterial(svg_material2),1);
-                        let svg_logo2 = new Physijs.BoxMesh(shape2, Physijs.createMaterial(svg_material2,1.0,0),1000);
+                        let svg_logo2 = new Physijs.BoxMesh(shape2, Physijs.createMaterial(svg_material2,1.0,0),1);
 
                         
                         // let ran_number = - 300 + Math.round(Math.random() * 300);
@@ -537,7 +579,7 @@
             mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;        //we'll see why we *2 +1 later
             mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
             //-0.5578703703703703 -0.22014388489208625 .i.e   
-              console.log(scene.children);
+            //   console.log(scene.children);
         }
 
         function changeTarget(event){
@@ -548,37 +590,8 @@
             // if(selected_objects.name == 'ground'){
             //     // console.log('yes exists');console.log(obj.uuid);
             // }
-
-            scene.traverse(function(obj){
-                if(obj instanceof THREE.Mesh && obj.name != 'ground' && obj.name != 'border_left' && obj.name != 'border_right' && obj.name != 'border_back' && obj.name != 'border_front'){
-                    let objarray =[];
-                    objarray.push(obj);
-                    let intersections = raycaster.intersectObjects(objarray);
-                         
-                    let intersection = (intersections.length) > 0 ? intersections[0] : null;
-        
-                    if(intersections.length > 0) {
-                            // for(each of scene.children){
-                                //  if (each.type !== 'CubeCamera' && each.type !== 'SpotLight') {
-                                //      console.log('works true');
-                                //  }
-                    
-                                // if(each.name == 'ground'){console.log(each.name)}
-                                    
-                                    intersection.object.rotation.x -= Math.cos(Math.PI * 2);
-                                    intersection.object.__dirtyPosition = true;
-                                    intersection.object.__dirtyRotation = true;
-                                
-                            //  }
-                            
-                            // intersection.object.position.y += 10;
-                            // intersection.object.material.wireframe = true;
-          
-                        // this.tl.to(this.mesh.rotation, 0.5, {x: 20, ease: Expo.easeOut});
-                    }
-        
-                }
-            });
+            
+           
             
             
            
@@ -728,6 +741,10 @@
             // recursive requestAnimationFrame
             trackballControls.update(clock.getDelta()); //works now with inittrackballcontrols
 
+            // scene.traverse(function(obj){
+            //     obj.object.visible = false;
+                
+            // });
             cube.visible = false;
             // cubeCamera.updateCubeMap(renderer, scene);  //honestly it works without this //check 
             cube.visible = true;
@@ -755,6 +772,44 @@
             }
 
             document.addEventListener('click',changeTarget,false);
+
+            scene.traverse(function(obj){
+                if(obj instanceof THREE.Mesh && obj.name != 'ground' && obj.name != 'border_left' && obj.name != 'border_right' && obj.name != 'border_back' && obj.name != 'border_front'){
+                    let objarray =[];
+                    step6 += 0.00001;
+                    objarray.push(obj);
+                    let intersections = raycaster.intersectObjects(objarray);
+                         
+                    let intersection = (intersections.length) > 0 ? intersections[0] : null;
+        
+                    if(intersections.length > 0) {
+                            // for(each of scene.children){
+                                //  if (each.type !== 'CubeCamera' && each.type !== 'SpotLight') {
+                                //      console.log('works true');
+                                //  }
+                    
+                                // if(each.name == 'ground'){console.log(each.name)}
+                                if(intersection.object.name == 'svg_master_key'){
+                                    window.open(intersection.object.userData.URL);
+                                }
+                                    intersection.object.rotation.x -= Math.cos(step6);
+                                    intersection.object.__dirtyPosition = true;
+                                    intersection.object.__dirtyRotation = true;
+                                
+                            //  }
+                            
+                            // intersection.object.position.y += 10;
+                            // intersection.object.material.wireframe = true;
+          
+                        // this.tl.to(this.mesh.rotation, 0.5, {x: 20, ease: Expo.easeOut});
+                    }
+        
+                }
+            });
+
+
+
+
           
 
             requestAnimationFrame(render);

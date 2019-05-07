@@ -1,6 +1,7 @@
 // import { isContext } from "vm";
 
     let camera, scene, renderer, controls, mesh_group;
+    let step5 = 0;
     
     function init() {
         Physijs.scripts.worker = '../../libs/other/physijs/physijs_worker.js';
@@ -143,12 +144,11 @@
         // let sphereMaterial = cubeMaterial.clone();      //this is so useful
 
 
-        // extruding svgs
-        function extrudeSvg(){
-            let svg_string4 = document.getElementById("key6").getAttribute("d");
-            function extrudeShape(svgstring) {
-                let shape = transformSVGPathExposed(svgstring);
-                return shape;
+        function extrudeMasterKey(){
+            let svg_master_string = document.getElementById("svg_master_string").getAttribute("d");
+            function extrudeShape(svg_master_string) {
+                let svg_master_geometry = transformSVGPathExposed(svg_master_string);
+                return svg_master_geometry;
             }
            
             let options = {
@@ -161,38 +161,80 @@
                 steps:1
             }
     
-
-            shape4 = new THREE.ExtrudeGeometry(extrudeShape(svg_string4), options);
-            shape4.center();
-       
+            svg_master_geometry = new THREE.ExtrudeGeometry(extrudeShape(svg_master_string), options);
+            svg_master_geometry.center();
             
             // let textureLoader = new THREE.TextureLoader();
-            let svg_material1 = new THREE.MeshStandardMaterial( { 
-                color: 0x4e3725,
+            let svg_master_material = new THREE.MeshStandardMaterial( { 
+                color: 0x5e7d5e,
                 opacity: 1,
                 metalness:1,
                 roughness:1
                 // map: textureLoader.load('../assets/textures/w_c.jpg')
             } );
             
-            
+            let svg_master_key = new Physijs.BoxMesh(svg_master_geometry, Physijs.createMaterial(svg_master_material),1);
+            svg_master_key.name = 'master_key';
+            svg_master_key.userData = { URL: "http://localhost:8080/threejs_repo/sketch1.html"}
+            svg_master_key.scale.set(0.1,0.1,0.1);
+            svg_master_key.receiveShadow = true;
+            svg_master_key.castShadow = true;
+            svg_master_key.position.y = 90;
+            svg_master_key.position.x = 200;
 
-            let svg_logo4 = new Physijs.BoxMesh(shape4, Physijs.createMaterial(svg_material1),1);
-            svg_logo4.name = 'master_key';
-            svg_logo4.userData = { URL: "http://localhost:8080/threejs_repo/sketch1.html"}
-            svg_logo4.scale.set(0.1,0.1,0.1);
-
-            svg_logo4.receiveShadow = true;
-            svg_logo4.castShadow = true;
-            svg_logo4.position.y = 90;
-
-            scene.add(svg_logo4);
-
-                            
-                 
+            scene.add(svg_master_key);
         }
+        extrudeMasterKey();
+
         
-        extrudeSvg();
+        // extruding svgs
+        // function extrudeSvg(){
+        //     let svg_string4 = document.getElementById("key6").getAttribute("d");
+        //     function extrudeShape(svgstring) {
+        //         let shape = transformSVGPathExposed(svgstring);
+        //         return shape;
+        //     }
+           
+        //     let options = {
+        //         depth: 10,
+        //         bevelThickness:20,
+        //         bevelSize:1,
+        //         bevelSegments:3,
+        //         bevelEnabled: true,
+        //         curveSegements:12,
+        //         steps:1
+        //     }
+    
+
+        //     shape4 = new THREE.ExtrudeGeometry(extrudeShape(svg_string4), options);
+        //     shape4.center();
+       
+            
+        //     // let textureLoader = new THREE.TextureLoader();
+        //     let svg_material1 = new THREE.MeshStandardMaterial( { 
+        //         color: 0x4e3725,
+        //         opacity: 1,
+        //         metalness:1,
+        //         roughness:1
+        //         // map: textureLoader.load('../assets/textures/w_c.jpg')
+        //     } );
+            
+        //     let svg_logo4 = new Physijs.BoxMesh(shape4, Physijs.createMaterial(svg_material1),1);
+        //     svg_logo4.name = 'master_key';
+        //     svg_logo4.userData = { URL: "http://localhost:8080/threejs_repo/sketch1.html"}
+        //     svg_logo4.scale.set(0.1,0.1,0.1);
+
+        //     svg_logo4.receiveShadow = true;
+        //     svg_logo4.castShadow = true;
+        //     svg_logo4.position.y = 90;
+
+        //     scene.add(svg_logo4);
+
+            
+                 
+        // }
+        
+        // extrudeSvg();
         createGroundWall(scene);            //called after extrudesvg bc it has gravity of 0;
         
         // const canvas = document.createElement("canvas");
@@ -291,7 +333,7 @@
         // let spheresIndex = 0;
  
         let threshold = 0.1;
-        let pointSize = 0.02;
+        let pointSize = 2;
         
         let rotateY = new THREE.Matrix4().makeRotationY( 0.005 );   //hm
 
@@ -348,7 +390,7 @@
                 // color: 0x42dff4,
                 color: color_temp,
                 transparent: true,
-                opacity: 0.1
+                opacity: 0.3
             });
 
             return new THREE.Points(geometry, material);
@@ -500,9 +542,9 @@
             //   console.log(scene.children);
         }
 
-        function changeTarget(event){
+        function changeTarget(){
             // event.preventDefault();
-            // object_clicked = true;
+            // object_clicked = true;s
             scene.traverse(function(obj){
                 // if(obj instanceof THREE.Mesh && obj.name != 'ground' && obj.name != 'border_left' && obj.name != 'border_right' && obj.name != 'border_back' && obj.name != 'border_front' && obj.name != 'wave'){
                 //     let objarray =[];
@@ -520,7 +562,7 @@
                                 // if(each.name == 'ground'){console.log(each.name)}
                                     // let step;
                                     // step += 0.4;
-                                    if(intersection.object.name == 'master_key'){
+                                    if(intersection.object.name == 'svg_master_key'){
                                         window.open(intersection.object.userData.URL);
                                     }
                                     
@@ -540,6 +582,7 @@
 
            
         }
+        // changeTarget();
         // document.addEventListener('mousemove',onDocMouseMove );
         document.addEventListener('mousemove',findMousePosition, false);
         // document.addEventListener('click',changeTarget(event), false);
@@ -572,7 +615,7 @@
                     roughness:1,
                     color: 0xffffff, 
                     transparent:true, // 
-                    opacity:0.2
+                    opacity:0.3
 
                     // //second way of texturing
                     // alphaMap: textureLoader.load('../assets/textures/alpha/partial-transparency.png'),
@@ -632,7 +675,7 @@
             camera.add(audioListener);    
             var positionSound1 = new THREE.PositionalAudio( audioListener );
             var audioLoader = new THREE.AudioLoader();
-            audioLoader.load('./cow.ogg', function(buffer) {
+            audioLoader.load('./rainsound.mp3', function(buffer) {
                 positionSound1.setBuffer( buffer );
                 positionSound1.setRefDistance( 100 );
                 positionSound1.play();
@@ -726,22 +769,27 @@
             // cubeCamera2.updateCubeMap(renderer, scene);
             // cube2.visible = true;
             // camera_pivot.rotateOnAxis( Y_AXIS, 0.01 );   
-            camera.position.y = camera.position.y * Math.cos(angle) +2;
-            while(camera.position.y < 400){
+            // camera.position.y = camera.position.y * Math.cos(angle) +2;
+            while(camera.position.y < 3000){
 
                 setTimeout(() => {
-                    camera.position.y += camera.position.y * 0.01;
-                },7000);
+                    camera.position.y += step5;
+                },10000);
                 // camera.position.y -=  Math.cos(angle);   //this is good too
                 // camera.position.z = 500 *  Math.sin(angle);
                 angle += 0.0009;
 
                 break;
             }
-            counter += 0.07;
-            // let counter2;
-            // counter2 += 0.03;
-
+            if(camera.position.y < 700){
+                counter += 0.07;
+                // let counter2;
+                // counter2 += 0.03;
+                step5 += 0.005;
+                camera.rotation.x = Math.cos(step5);
+            }
+           
+            // camera.rotation.y = Math.sin(step5);
             // document.addEventListener('mouseover', ()=>{ 
                 scene.traverse(function(obj){
                     if(obj instanceof THREE.Mesh && obj.name != 'ground' && obj.name != 'border_left' && obj.name != 'border_right' && obj.name != 'border_back' && obj.name != 'border_front' && obj.name != 'wave'){
@@ -760,9 +808,7 @@
                                     // if(each.name == 'ground'){console.log(each.name)}
                                         // let step;
                                         // step += 0.4;
-                                        if(intersection.object.name == 'master_key'){
-                                            window.open(intersection.object.userData.URL);
-                                        }
+                                      
 
                                         intersection.object.rotation.x += 0.01;
                                         intersection.object.rotation.y += 0.01;  

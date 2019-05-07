@@ -1,6 +1,9 @@
 // import { isContext } from "vm";
 
+
     let camera, scene, renderer, controls, mesh_group;
+    let step5 = 0;
+
     
     function init() {
         Physijs.scripts.worker = '../../libs/other/physijs/physijs_worker.js';
@@ -92,64 +95,59 @@
         let cubeCamera = new THREE.CubeCamera(0.1, 100, 512);
 
         function sky(){
-            let urls = [
-                './svgandjpg/beach/right.png',
-                './svgandjpg/beach/left.png',
-                './svgandjpg/beach/top.png',
-                './svgandjpg/beach/bottom.png',
-                './svgandjpg/beach/front.png',
-                './svgandjpg/beach/back.png'
-            ];
-    
-            let skyLoader = new THREE.CubeTextureLoader();
-            let textureLoader = new THREE.TextureLoader();
-            let skyMap = skyLoader.load(urls);
-            scene.background = skyMap;
-    
-            //creating cube that will reflect
-            let cubeMaterial = new THREE.MeshStandardMaterial({
-                envMap: skyMap,
-                color: 0xffffff,
-                metalness:1,
-                roughness: 0
-            });
-    
-            // create new camera for cube mirror
             
-            scene.add(cubeCamera);
-            let cube_geom = new THREE.CubeGeometry(100,100,100);
+            // let cube_geom = new THREE.CubeGeometry(100,100,100);
 
-            let mirrors = 280;
-            for(let i = 0; i < mirrors; i ++) {
-                cube =  new Physijs.BoxMesh(cube_geom, Physijs.createMaterial(
-                    cubeMaterial
-                ));
+            // let mirrors = 60;
+            // for(let i = 0; i < mirrors; i ++) {
+            //     cube =  new Physijs.BoxMesh(cube_geom, Physijs.createMaterial(
+            //         cubeMaterial
+            //     ));
 
-                cube.position.x = - 200 + Math.round(Math.random() * 400);
-                cube.position.y = 500+ Math.round(Math.random() * 800);
-                cube.position.z = - 200 + Math.round(Math.random() * 400);
-                cube.rotation.y = Math.cos(Math.random()* Math.PI * 2); 
-                cube.__dirtyPosition = true;
-                cube.__dirtyRotation = true;
-                cube.castShadow = true;       //check for error - add light to see
-                cube.receiveShadow = true;    //
-                scene.add(cube);
-            }
+            //     cube.position.x = - 200 + Math.round(Math.random() * 400);
+            //     cube.position.y = 500+ Math.round(Math.random() * 800);
+            //     cube.position.z = - 200 + Math.round(Math.random() * 400);
+            //     // cube.rotation.y = Math.cos(Math.random()* Math.PI * 2); 
+            //     cube.__dirtyPosition = true;
+            //     cube.__dirtyRotation = true;
+            //     cube.castShadow = true;       //check for error - add light to see
+            //     cube.receiveShadow = true;    //
+            //     scene.add(cube);
+            // }
         }
         
         sky();
+        let urls = [
+            './svgandjpg/beach/right.png',
+            './svgandjpg/beach/left.png',
+            './svgandjpg/beach/top.png',
+            './svgandjpg/beach/bottom.png',
+            './svgandjpg/beach/front.png',
+            './svgandjpg/beach/back.png'
+        ];
+
+        let skyLoader = new THREE.CubeTextureLoader();
+        let textureLoader = new THREE.TextureLoader();
+        let skyMap = skyLoader.load(urls);
+        scene.background = skyMap;
+
+        //creating cube that will reflect
+        let cubeMaterial = new THREE.MeshStandardMaterial({
+            envMap: skyMap,
+            color: 0xffffff,
+            metalness:1,
+            roughness: 0
+        });
+
+        // create new camera for cube mirror
         
-      
-
-        // let sphereMaterial = cubeMaterial.clone();      //this is so useful
-
-
-        // extruding svgs
-        function extrudeSvg(){
-            let svg_string4 = document.getElementById("key6").getAttribute("d");
-            function extrudeShape(svgstring) {
-                let shape = transformSVGPathExposed(svgstring);
-                return shape;
+        scene.add(cubeCamera);
+        
+        function extrudeMasterKey(){
+            let svg_master_string = document.getElementById("svg_master_string").getAttribute("d");
+            function extrudeShape(svg_master_string) {
+                let svg_master_geometry = transformSVGPathExposed(svg_master_string);
+                return svg_master_geometry;
             }
            
             let options = {
@@ -162,37 +160,83 @@
                 steps:1
             }
     
-
-            shape4 = new THREE.ExtrudeGeometry(extrudeShape(svg_string4), options);
-            shape4.center();
-       
+            svg_master_geometry = new THREE.ExtrudeGeometry(extrudeShape(svg_master_string), options);
+            svg_master_geometry.center();
             
             // let textureLoader = new THREE.TextureLoader();
-            let svg_material1 = new THREE.MeshStandardMaterial( { 
-                color: 0x4e3725,
+            let svg_master_material = new THREE.MeshStandardMaterial( { 
+                color: 0x5e7d5e,
                 opacity: 1,
                 metalness:1,
                 roughness:1
                 // map: textureLoader.load('../assets/textures/w_c.jpg')
             } );
             
+            let svg_master_key = new Physijs.BoxMesh(svg_master_geometry, Physijs.createMaterial(svg_master_material),1);
+            svg_master_key.name = 'master_key';
+            svg_master_key.userData = { URL: "http://localhost:8080/threejs_repo/sketch2.html"}
+            svg_master_key.scale.set(0.1,0.1,0.1);
+            svg_master_key.receiveShadow = true;
+            svg_master_key.castShadow = true;
+            svg_master_key.position.y = 90;
+            svg_master_key.position.x = 200;
+
+            scene.add(svg_master_key);
+        }
+        extrudeMasterKey();
+
+        // let sphereMaterial = cubeMaterial.clone();      //this is so useful
+
+
+        // extruding svgs
+        // function extrudeSvg(){
+        //     let svg_string4 = document.getElementById("key6").getAttribute("d");
+        //     function extrudeShape(svgstring) {
+        //         let shape = transformSVGPathExposed(svgstring);
+        //         return shape;
+        //     }
+           
+        //     let options = {
+        //         depth: 10,
+        //         bevelThickness:20,
+        //         bevelSize:1,
+        //         bevelSegments:3,
+        //         bevelEnabled: true,
+        //         curveSegements:12,
+        //         steps:1
+        //     }
+    
+
+        //     shape4 = new THREE.ExtrudeGeometry(extrudeShape(svg_string4), options);
+        //     shape4.center();
+       
+            
+        //     // let textureLoader = new THREE.TextureLoader();
+        //     let svg_material1 = new THREE.MeshStandardMaterial( { 
+        //         color: 0x4e3725,
+        //         opacity: 1,
+        //         metalness:1,
+        //         roughness:1
+        //         // map: textureLoader.load('../assets/textures/w_c.jpg')
+        //     } );
+            
             
 
-            let svg_logo4 = new Physijs.BoxMesh(shape4, Physijs.createMaterial(svg_material1),1);
+        //     let svg_logo4 = new Physijs.BoxMesh(shape4, Physijs.createMaterial(svg_material1),1);
             
-            svg_logo4.scale.set(0.1,0.1,0.1);
+        //     svg_logo4.scale.set(0.1,0.1,0.1);
 
-            svg_logo4.receiveShadow = true;
-            svg_logo4.castShadow = true;
-            svg_logo4.position.y = 90;
+        //     svg_logo4.receiveShadow = true;
+        //     svg_logo4.castShadow = true;
+        //     svg_logo4.position.y = 90;
 
-            scene.add(svg_logo4);
+        //     scene.add(svg_logo4);
 
                             
                  
-        }
+        // }
         
-        extrudeSvg();
+        // extrudeSvg();
         createGroundWall(scene);            //called after extrudesvg bc it has gravity of 0;
         
         const canvas = document.createElement("canvas");
@@ -239,37 +283,82 @@
        
 
       
-        let canvas_texture = new THREE.CanvasTexture(canvas);
-        let cube_demo = new THREE.CubeGeometry(100,100,100);
-        let cube_demo_mat = new THREE.MeshStandardMaterial({
-        map: canvas_texture
-        // displacementMap: canvas_texture
         
-        // bumbmap: new THREE.Texture(canvas),
-        // metalness:0,
-        // roughness:1,
-        // color:0xffffff,
-        // bumpScale:3,
-        // map: textureLoader.load('../assets/textures/general/wood-2.jpg')
-        })
-        let cube2;
-        // let canvasMirrors = 100;
-        function makemore(boxNumber){
-            for(let i = 0; i < boxNumber; i ++) {
-                cube2 =  new Physijs.BoxMesh(cube_demo, Physijs.createMaterial(
-                    cube_demo_mat
-                ));
+        
+        
+        // let cubearray3 = new THREE.Object3D();
+// let canvasMirrors = 100;
 
-                cube2.position.x = - 200 + Math.round(Math.random() * 400);
-                cube2.position.y = 800+ Math.round(Math.random() * 800);
-                cube2.position.z = - 200 + Math.round(Math.random() * 400);
-                cube2.rotation.y = Math.cos(Math.random()* Math.PI * 2); 
-                cube2.castShadow = true;       //check for error - add light to see
-                cube2.receiveShadow = true;    //
-                scene.add(cube2);
+
+        let cube_test_geometry = new THREE.CubeGeometry(100,100,100);
+        let canvas_texture = new THREE.CanvasTexture(canvas);
+        
+        let cubic_canvas_material = new THREE.MeshStandardMaterial({
+            map: canvas_texture
+            // displacementMap: canvas_texture
+            
+            // bumbmap: new THREE.Texture(canvas),
+            // metalness:0,
+            // roughness:1,
+            // color:0xffffff,
+            // bumpScale:3,
+            // map: textureLoader.load('../assets/textures/general/wood-2.jpg')
+        });
+
+        // let cube_test;
+        // function makemore1(boxNumber){
+        //     for(let i = 0; i < boxNumber; i ++) {
+        //         cube_test =  new Physijs.BoxMesh(cube_test_geometry, Physijs.createMaterial(
+        //             cubic_canvas_material
+        //         ));
+
+        //         cube_test.position.x = - 200 + Math.round(Math.random() * 400);
+        //         cube_test.position.y = 800+ Math.round(Math.random() * 800);
+        //         cube_test.position.z = - 200 + Math.round(Math.random() * 400);
+        //         // cube2.rotation.y = Math.cos(Math.random()* Math.PI * 2); 
+        //         cube_test.castShadow = true;       //check for error - add light to see
+        //         cube_test.receiveShadow = true;    //
+        //         // cubearray.add(cube_test);
+        //         scene.add(cube_test);
+        //     }
+        // }
+        // makemore1(100);
+
+        //testing optimized here - using array
+
+        let cubic_array = new THREE.Object3D();
+        function makemore(boxNumber){
+      
+            for(let i = 0; i < boxNumber; i++){
+                let cubic = new THREE.CubeGeometry(100,100,100);
+                let cubic_material = new THREE.MeshStandardMaterial({
+                    color: 0xffffff
+                })
+                let cubic_mesh = new THREE.Mesh(cubic, cubic_material); 
+                cubic_array.add(cubic_mesh);            //this is an array - full of cubics     //but !* its not being rendered here - only reference
+            }
+
+            for(each of cubic_array.children){
+                // console.log(each.geometry);
+                // show = each.geometry;
+                cubics = new Physijs.BoxMesh(each.geometry, Physijs.createMaterial(     //traversing through each cubic_array - and getting geometry only
+                    // cubic_canvas_material
+                    cubeMaterial
+                    
+                ),0.1,1);
+
+                cubics.position.x = - 200 + Math.round(Math.random() * 400);
+                cubics.position.y = 800+ Math.round(Math.random() * 800);
+                cubics.position.z = - 200 + Math.round(Math.random() * 400);
+
+                cubics.__dirtyPosition = true;
+                // console.log(cubics);
+                scene.add(cubics);
             }
         }
-        makemore(70);
+        
+        
+        
 
         
 
@@ -430,9 +519,9 @@
                                     // let step;
                                     // step += 0.4;
                                     // intersection.object.rotation.y += Math.cos(Math.PI * step);
-                                    intersection.object.__dirtyPosition = true;
-                                    intersection.object.__dirtyRotation = true;
-                                    makemore(Math.floor(Math.random()*20));
+                                    // intersection.object.__dirtyPosition = true;
+                                    // intersection.object.__dirtyRotation = true;
+                                    makemore(10);
                             //  }
                             
                             // intersection.object.position.y += 10;
@@ -448,6 +537,7 @@
         document.addEventListener('mousemove',findMousePosition, false);
         document.addEventListener('click',changeTarget,false);
 
+        makemore(30);
         // // lets add spheres - these will be airs
         // let airBubble = new function() {
         //     this.numberOfObjects = scene.children.length;
@@ -591,12 +681,12 @@
                 }
                 if(obj.name == 'border_back' ){
                     obj.translateY(-1000);
-                    obj.translateZ(-1000);
+                    obj.translateZ(-1800);
                     obj.rotation.x = -Math.PI / 2;
                 }
                 if(obj.name == 'border_front' ){
                     obj.translateY(-1000);
-                    obj.translateZ(1000);
+                    obj.translateZ(1800);
                     obj.rotation.x = -Math.PI / 2;
                 }
                 obj.__dirtyRotation = true;
@@ -628,13 +718,33 @@
             trackballControls.update(clock.getDelta()); //works now with inittrackballcontrols
 
             
-            cube.visible = false;
-            cubeCamera.updateCubeMap(renderer, scene);  //honestly it works without this //check 
-            cube.visible = true;
+            // cube.visible = false;
+            // cubeCamera.updateCubeMap(renderer, scene);  //honestly it works without this //check 
+            // cube.visible = true;
 
-            cube2.visible = false;
-            cubeCamera.updateCubeMap(renderer, scene);  //honestly it works without this //check 
-            cube2.visible = true;
+            scene.traverse(function(obj){
+                if(obj == cubics) {
+                    cubics.visible = false;
+                    // cubeCamera.updateCubeMap(renderer, scene);  //honestly it works without this //check 
+                    cubics.visible = true;
+                }
+            });
+
+            
+            step5 += 0.004;
+            scene.traverse(function(obj){
+                if(obj.name == 'ground') {
+                    obj.__dirtyRotation = true;
+                    obj.__dirtyPosition = true;
+                   obj.rotation.y = Math.cos(step5);
+
+                }
+            });
+
+            
+            // cube2.visible = false;
+            // cubeCamera.updateCubeMap(renderer, scene);  //honestly it works without this //check 
+            // cube2.visible = true;
 
 
             // demo.material.map.needsUpdate = true;
@@ -662,8 +772,8 @@
 
             requestAnimationFrame(render);
             renderer.render(scene, camera);
-            cube.rotation.y += 0.01;
-            cube2.rotation.y -= 0.01;       //maybe not
+            // cube.rotation.y += 0.01;
+            // cube2.rotation.y -= 0.01;       //maybe not
             scene.simulate();
             helper.update();
             
